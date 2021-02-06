@@ -82,14 +82,14 @@ function connectDB(){
 
         // instance 메소드 - 인증 메소드
         UserSchema.method('authenticate', function(plainText, inSalt, hashed_password){
+            console.log('스키마의 authenticate 메소드 호출됨')
             if(inSalt){
                 console.log('authenticate 호출됨 : %s -> %s : %s', plainText,
                     this.encryptPassword(plainText, inSalt), hashed_password);
                 return this.encryptPassword(plainText, inSalt) == hashed_password;
             } else{
-                console.log('authenticate 호출됨 : %s -> %s : %s', plainText,
-                    this.encryptPassword(plainText, inSalt), this.hashed_password);
-                return this.encryptPassword(plainText, inSalt) == this.hashed_password;
+                console.log('[%s] 아이디 slat 값이 없음!', this.id);
+                return false;
             }
         });
 
