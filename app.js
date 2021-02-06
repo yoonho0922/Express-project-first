@@ -40,13 +40,12 @@ route_loader.init(app, express.Router());
 
 //==== 에러 핸들러 ====//
 const errorHandler = expressErrorHandler({
-    static: {
-        '404': './public/404.html'
-    }
+    static: {'404': './public/404.html'}
 });
 
 app.use(expressErrorHandler.httpError(404));
 app.use(errorHandler);
+
 
 //==== 서버 시작 ====//
 http.createServer(app).listen(app.get('port'), function(){
