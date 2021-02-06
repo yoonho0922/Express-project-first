@@ -25,6 +25,7 @@ app.use(bodyParser.json())
 
 //==== 데이터베이스 관련 ====//
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 let database;
 let UserSchema;
@@ -36,10 +37,10 @@ const MongoClient = require('mongodb').MongoClient;
 function connectDB(){
     // 데이터베이스 연결 정보
     const databaseUrl = 'mongodb://localhost:27017/local';
-    const option = { useUnifiedTopology: true }
+    const option = { useUnifiedTopology: true, useNewUrlParser: true }
     // 데이터베이스 연결
     mongoose.Promise = global.Promise;
-    mongoose.connect(databaseUrl);
+    mongoose.connect(databaseUrl, option);
     database = mongoose.connection;
 
     database.on('error', console.error.bind(console, 'mongoose connection error'));
@@ -49,10 +50,59 @@ function connectDB(){
 
         // Schema 정의
         UserSchema = mongoose.Schema({
-            id: String,
-            name: String,
-            password: String
+            id: {type: String, required: true, 'defualt': ' '},
+            hashed_password : {type: String, required: true, 'default' : ' '},
+            salt : {type: String, required: true},
+            name: {type: String, createIndex: 'hashed', 'default': ' '}
         });
+
+        // static 메소드 - findById 메소드
+        UserSchema.static('findById', function(id, callback){
+            return this.find({id: id}, callback);
+        });
+
+        // static 메소드 - findAll 메소드
+        UserSchema.static('findAll', function(callback){
+            return this.find({ }, callback);
+        })
+
+        // instance 메소드 - 암호화 메소드
+        UserSchema.method('encryptPassword', function(plainText, inSalt){
+            if(inSalt){
+                return crypto.createHmac('sha1', inSalt).update(plainText).digest('hex');
+            } else{
+                return crypto.createHmac('sha1', this.salt).update(plainText).digest('hex');
+            }
+        });
+
+        // instance 메소드 - salt 값 생성 메소드
+        UserSchema.method('makeSalt', function(){
+            return Math.round((new Date().valueOf() * Math.random())) + '';
+        });
+
+        // instance 메소드 - 인증 메소드
+        UserSchema.method('authenticate', function(plainText, inSalt, hashed_password){
+            if(inSalt){
+                console.log('authenticate 호출됨 : %s -> %s : %s', plainText,
+                    this.encryptPassword(plainText, inSalt), hashed_password);
+                return this.encryptPassword(plainText, inSalt) == hashed_password;
+            } else{
+                console.log('authenticate 호출됨 : %s -> %s : %s', plainText,
+                    this.encryptPassword(plainText, inSalt), this.hashed_password);
+                return this.encryptPassword(plainText, inSalt) == this.hashed_password;
+            }
+        });
+
+        // 가상 메소드 - password
+        UserSchema.virtual('password').set(function(password){
+            this._password = password;
+            this.salt  = this.makeSalt();
+            this.hashed_password = this.encryptPassword(password);
+
+        }).get(function() {return this._password});
+
+
+
         console.log('Schema 정의함');
 
         // UserModel 정의
@@ -73,17 +123,29 @@ const authUser = function(database, id, password, callback){
     console.log('authUser 호출됨 : ' + id);
 
     // 아이디와 비밀번호를 사용해 검색
-    UserModel.find({'id': id, 'password': password}, function(err, results){
-        if(err) {callback(err, null); return}
+    UserModel.findById(id, function(err, results){
+        if (err) {callback(err, null); return}
 
-        if(results.length > 0){
-            console.log('일치하는 사용자 찾음');
-            callback(null, results);
-        } else{
-            console.log('일치하는 사용자를 찾지 못함');
+        if (results.length > 0) {
+            console.log('[%s] 아이디와 일치하는 사용자 찾음', id);
+
+            // 비밀번호 확인 : 모델 인스턴스를 객체를 만들고 authenticate() 메소드 호출
+            const user = new UserModel({id:id});
+            const authenticated = user.authenticate(password, results[0].salt, results[0].hashed_password);
+
+            if (authenticated) {
+                console.log('비밀번호 일치함');
+                callback(null, results);
+            } else {
+                console.log('비밀번호 일치하지 않음');
+                callback(null, null);
+            }
+
+        } else {
+            console.log('[%s] 아이디와 일치하는 사용자를 찾지 못함', id);
             callback(null, null);
         }
-    });
+    })
 }
 
 // 사용자를 추가하는 함수
