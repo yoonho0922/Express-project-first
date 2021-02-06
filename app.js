@@ -24,7 +24,11 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 //==== 데이터베이스 관련 ====//
+const mongoose = require('mongoose');
+
 let database;
+let UserSchema;
+let UserModel;
 
 // 몽고디비 모듈의 MongoClient 속성 참조
 const MongoClient = require('mongodb').MongoClient;
@@ -34,32 +38,49 @@ function connectDB(){
     const databaseUrl = 'mongodb://localhost:27017/local';
     const option = { useUnifiedTopology: true }
     // 데이터베이스 연결
-    MongoClient.connect(databaseUrl, option, function(err, db){
-        if (err) throw err;
+    mongoose.Promise = global.Promise;
+    mongoose.connect(databaseUrl);
+    database = mongoose.connection;
 
+    database.on('error', console.error.bind(console, 'mongoose connection error'));
+
+    database.on('open', function(){
         console.log('데이터베이스에 연결되었습니다. : ' + databaseUrl);
-        // database 변수에 할당
-        database = db.db('local');
+
+        // Schema 정의
+        UserSchema = mongoose.Schema({
+            id: String,
+            name: String,
+            password: String
+        });
+        console.log('Schema 정의함');
+
+        // UserModel 정의
+        UserModel = mongoose.model('users', UserSchema);
+        console.log('UserModel 정의함');
+    });
+
+    // 연결이 끊어졌을 때 5초 후 재연결
+    database.on('disconnected', function(){
+        console.log('연결이 끊어졌습니다. 5초 후 다시 연결합니다.');
+        setInterval(connectDB, 5000);
     });
 }
 
 //==== 사용자 관련 ====//
 // 사용자를 인증하는 함수
 const authUser = function(database, id, password, callback){
-    console.log('authUser 호출됨');
-
-    // User 컬렉션 참조
-    const users = database.collection('users');
+    console.log('authUser 호출됨 : ' + id);
 
     // 아이디와 비밀번호를 사용해 검색
-    users.find({'id': id, 'password': password}).toArray(function(err, docs){
-        if(err){ callback(err, null); return; }
+    UserModel.find({'id': id, 'password': password}, function(err, results){
+        if(err) {callback(err, null); return}
 
-        if(docs.length > 0){
-            console.log('아이디 [%s], 비밀번호 [%s]가 일치하는 사용자 찾음.', id, password);
-            callback(null, docs);
+        if(results.length > 0){
+            console.log('일치하는 사용자 찾음');
+            callback(null, results);
         } else{
-            console.log('아이디 [%s], 비밀번호 [%s]가 일치하는 사용자를 찾지 못함', id, password);
+            console.log('일치하는 사용자를 찾지 못함');
             callback(null, null);
         }
     });
@@ -69,21 +90,16 @@ const authUser = function(database, id, password, callback){
 const addUser = function(database, id, password, name, callback){
     console.log('addUser 호출됨 : ' + id + ', ' + password + ', ' + name);
 
-    // users 컬렉션 참조
-    const users = database.collection('users');
+    // UserModel 인스턴스 생성
+    const user = new UserModel({'id': id, 'password': password, 'name': name});
 
-    // 사용자 추가
-    users.insertMany([{'id': id, 'password': password, 'name': name}], function(err, result) {
+    // save()로 저장
+    user.save(function(err){
         if(err) {callback(err, null); return;}
 
-        // 콜백 함수를 호출하면서 결과 객체 전달
-        if(result.insertedCount > 0){
-            console.log('사용자 레코드 추가됨 : ' + result.insertedCount);
-        } else{
-            console.log('추가된 레코드없음');
-        }
+        console.log('사용자 데이터 추가함');
+        callback(null, user);
 
-        callback(null, result);
     });
 }
 
@@ -138,13 +154,13 @@ router.route('/process/adduser').post(function(req, res){
             if(err) {throw err;}
 
             // 추가된 데이터가 있으면 성공 응답 전송
-            if(result && result.insertedCount > 0){
+            if(result){
                 res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
                 res.write('<h2>사용자 추가 성공</h2>');
                 res.end();
             } else{
                 res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
-                res.write('<h2>사용자 추가  실패</h2>');
+                res.write('<h2>사용자 추가 실패</h2>');
                 res.end();
             }
         });
