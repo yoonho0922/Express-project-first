@@ -12,12 +12,25 @@ const login = function(req, res){
 
             if(docs){
                 const username = docs[0].name;
-                res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
-                res.write('<h1>로그인 성공</h1>');
-                res.write('<div><p>사용자 아이디 : ' + paramId + '</p></div>');
-                res.write('<div><p>사용자 이름 : ' + username + '</p></div>');
-                res.write('<br><br><a href=/public/login.html>다시 로그인하기</a>');
-                res.end();
+
+                res.writeHead('200', {'Content-Type': 'text/html;charset=utf8'});
+
+                // 뷰 템플릿을 사용하여 렌더링한 후 전송
+                const context = {userid: paramId, username: username};
+                req.app.render('login_success', context, function(err, html) {
+                    if (err) {
+                        console.error('뷰 렌더링 중 에러 발생 : ' + err.stack);
+
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                        res.write('<h2>뷰 렌더링 중 에러 발생</h2>');
+                        res.write('<p>' + err.stack + '</p>');
+                        res.end();
+
+                        return;
+                    }
+                    res.end(html);
+                });
+
             } else{
                 res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
                 res.write('<h1>로그인 실패</h1>');
@@ -52,8 +65,23 @@ const adduser = function(req, res){
             // 추가된 데이터가 있으면 성공 응답 전송
             if(result){
                 res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
-                res.write('<h2>사용자 추가 성공</h2>');
-                res.end();
+
+                // 뷰 템플레이트를 이용하여 렌더링한 후 전송
+                var context = {title: '사용자 추가 성공'};
+                req.app.render('adduser', context, function(err, html) {
+                    if (err) {
+                        console.error('뷰 렌더링 중 에러 발생 : ' + err.stack);
+
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                        res.write('<h2>뷰 렌더링 중 에러 발생</h2>');
+                        res.write('<p>' + err.stack + '</p>');
+                        res.end();
+
+                        return;
+                    }
+                    res.end(html);
+                });
+
             } else{
                 res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
                 res.write('<h2>사용자 추가 실패</h2>');

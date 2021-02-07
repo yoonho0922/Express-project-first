@@ -28,6 +28,11 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 
+//==== 뷰 관련 ====//
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+console.log('뷰 엔진이 ejs로 설정되었습니다.');
+
 //==== 데이터베이스 관련 ====//
 const database = require('./database/database');
 
