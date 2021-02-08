@@ -40,8 +40,24 @@ database.init(app, config);
 
 //==== 라우팅 관련 ====//
 const route_loader = require('./routes/route_loader');
+const router = express.Router();
 
-route_loader.init(app, express.Router());
+route_loader.init(app, router);
+
+router.route('/').get(function(req, res){
+    console.log('/ 패스 요청됨.');
+    res.render('index.ejs');
+});
+
+router.route('/login').get(function(req, res){
+    console.log('/login 패스 요청됨.');
+    res.render('login.ejs');
+})
+
+router.route('/signup').get(function(req, res) {
+    console.log('/signup 패스 요청됨.');
+    res.render('signup.ejs');
+});
 
 //==== 에러 핸들러 ====//
 const errorHandler = expressErrorHandler({
