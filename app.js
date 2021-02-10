@@ -14,7 +14,7 @@ const app = express();
 
 
 //==== 익스프레스 기본 설정 ====//
-const config = require('./config');
+const config = require('./config/config');
 
 // 기본 포트를 app 객체에 속성으로 설정
 app.set('port', config.server_port);
