@@ -152,6 +152,12 @@ router.route('/login').post(passport.authenticate('local-login', {
     failureFlash : true
 }));
 
+router.route('/logout').get(function(req, res) {
+    console.log('/logout 패스 요청됨.');
+    req.logout();
+    res.redirect('/');
+});
+
 router.route('/signup').get(function(req, res) {
     console.log('/signup 패스 요청됨');
     res.render('signup.ejs', {message: req.flash('signupMessage')});
