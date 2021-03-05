@@ -28,6 +28,7 @@ const login = function(req, res){
 
                         return;
                     }
+                    console.log('login_success 렌더링 완료');
                     res.end(html);
                 });
 
@@ -79,6 +80,7 @@ const adduser = function(req, res){
 
                         return;
                     }
+                    console.log('adduser 렌더링 완료');
                     res.end(html);
                 });
 

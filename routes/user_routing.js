@@ -1,5 +1,5 @@
 module.exports = function(router, passport){
-    console.log('user_passport 호출됨');
+    console.log('user_routing 호출됨');
 
     router.route('/').get(function(req, res){
         console.log('/ 패스 요청됨');

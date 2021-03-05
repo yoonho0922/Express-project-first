@@ -57,11 +57,13 @@ configPassport(app, passport);
 
 //==== 라우팅 관련 ====//
 const route_loader = require('./routes/route_loader');
-const userPassport = require('./routes/user_passport');
+const userRouting = require('./routes/user_routing');
+const postRouting = require('./routes/post_routing');
 const router = express.Router();
 
 route_loader.init(app, router);
-userPassport(router, passport);
+userRouting(router, passport);
+postRouting(router);
 
 
 
