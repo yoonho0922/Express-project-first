@@ -3,7 +3,21 @@ module.exports = function(router, passport){
 
     router.route('/').get(function(req, res){
         console.log('/ 패스 요청됨');
-        res.render('index.ejs');
+
+        // 인증 안된 경우
+        if (!req.user) {
+            console.log('사용자 인증 안된 상태임.');
+            res.render('index.ejs');
+            return;
+        }
+
+        // 인증된 경우
+        console.log('사용자 인증된 상태임.');
+        if (Array.isArray(req.user)) {
+            res.render('profile.ejs', {user: req.user[0]});
+        } else {
+            res.render('profile.ejs', {user: req.user});
+        }
     });
 
     router.route('/login').get(function(req, res){
@@ -12,7 +26,7 @@ module.exports = function(router, passport){
     });
 
     router.route('/login').post(passport.authenticate('local-login', {
-        successRedirect : '/profile',
+        successRedirect : '/',
         failureRedirect : '/login',
         failureFlash : true
     }));
@@ -29,27 +43,9 @@ module.exports = function(router, passport){
     });
 
     router.route('/signup').post(passport.authenticate('local-signup', {
-        successRedirect : '/profile',
+        successRedirect : '/',
         failureRedirect : '/signup',
         failureFlash : true
     }));
 
-    router.route('/profile').get(function(req, res) {
-        console.log('/profile 패스 요청됨.');
-
-        // 인증 안된 경우
-        if (!req.user) {
-            console.log('사용자 인증 안된 상태임.');
-            res.redirect('/');
-            return;
-        }
-
-        // 인증된 경우
-        console.log('사용자 인증된 상태임.');
-        if (Array.isArray(req.user)) {
-            res.render('profile.ejs', {user: req.user[0]});
-        } else {
-            res.render('profile.ejs', {user: req.user});
-        }
-    });
 };
