@@ -3,6 +3,6 @@ module.exports = function(router){
 
     router.route('/addpost').get(function(req, res){
         console.log('/addpost 패스 요청됨');
-        res.render('addpost.ejs');
+        res.render('addpost.ejs', {});
     });
 };

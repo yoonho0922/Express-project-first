@@ -3,15 +3,15 @@ const addpost = function(req, res){
 
     const paramTitle = req.body.title || req.query.title;
     const paramContents = req.body.contents || req.query.contents;
-    const paramWriter = req.body.writer || req.query.writer;
+    const writer = req.user.id;
 
-    console.log(`요청 파라미터 : ${paramTitle}, ${paramContents}, ${paramWriter}`);
+    console.log(`요청 파라미터 : ${paramTitle}, ${paramContents} 작성자 : ${writer}`);
 
     const database = req.app.get('database');
 
     if (database){
         // 1. 아이디를 사용해 사용자 검색
-        database.UserModel.findById(paramWriter, (err, results) => {
+        database.UserModel.findById(writer, (err, results) => {
             if (err){
                 console.log('게시판 글 추가 중 오류 발생 : ' + err.stack);
                 return;
@@ -20,13 +20,13 @@ const addpost = function(req, res){
             if(results == undefined || results.length < 1){
                 console.dir(results)
                 res.write('200',{'Content-Type' : 'text/html;charset=utf8'});
-                res.write('<h2>사용자 [' + paramWriter + ']를 찾을 수 없습니다.</h2>');
+                res.write('<h2>사용자 [' + writer + ']를 찾을 수 없습니다.</h2>');
                 res.end();
                 return
             }
 
             const userObjectId = results[0]._id;
-            console.log(`사용자 ObjectId : ${paramWriter} -> ${userObjectId}`);
+            console.log(`사용자 ObjectId : ${writer} -> ${userObjectId}`);
 
             // save()로 저장
             const post = new database.PostModel({

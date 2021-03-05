@@ -24,17 +24,20 @@
 	</div>
 	<br>
 	<div class="row">
-
-		<div class="col-sm-6">
-			<div class="well">
-				<h3><span class="fa fa-user"></span> 로컬 프로필 정보</h3>
-				<br>
-				<p>
-					<strong>아이디</strong>: <%= user.id %>
-					<br><br>
-					<strong>이름</strong>: <%= user.name %>
-				</p>
-				<br>
+		<div class="well">
+			<h3><span class="fa fa-user"></span> 로컬 프로필 정보</h3>
+			<br>
+			<p>
+				<strong>아이디</strong>: <%= user.id %>
+				<br><br>
+				<strong>이름</strong>: <%= user.name %>
+			</p>
+			<br>
+		</div>
+		<div class="well">
+			<div class="btn-group">
+				<a href="/addpost" type="button" class="btn btn-primary">글쓰기</a>
+				<a  type="button" class="btn btn-primary">글목록</a>
 			</div>
 		</div>
 
