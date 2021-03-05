@@ -36,11 +36,11 @@ const addpost = function(req, res){
             });
 
 
-            post.savePost((err, results) => {
+            post.save((err) => {
                 if(err) {throw err;}
 
                 console.log('글 작성', '포스팅 글을 생성했습니다. : ' + post._id);
-                return res.redirect('/public/addpost.html');
+                return res.redirect('/showpost/' + post._id);
             });
 
         });
@@ -49,4 +49,66 @@ const addpost = function(req, res){
     }
 };
 
+const showpost = function(req, res){
+    console.log('post_method 모듈 안에 있는 showpost 호출됨.');
+
+    // URL 파라미터로 전달됨
+    const paramId = req.body.id || req.query.id || req.params.id;
+    console.log('요청 파라미터 : ' + paramId);
+
+    const database = req.app.get('database');
+
+    // 데이터베이스 객체가 초기화된 경우
+    if (database.db){
+        database.PostModel.load(paramId, function(err, result){
+            if (err) {
+                console.error('게시판 글 조회 중 오류 발생 : ' + err.stack);
+
+                res.write('200',{'Content-Type' : 'text/html;charset=utf8'});
+                res.write('<h2>게시판 글 조회 중 오류 발생</h2>');
+                res.write('<p>' + err.stack + '</p>');
+                res.end();
+
+                return;
+            }
+
+            if (result){
+                console.log('글 가져옴, 제목 : ' + result.title);
+                res.writeHead('200',{'Content-Type' : 'text/html;charset=utf8'});
+
+                // 뷰 템플릿을 사용하여 렌더링한 후 전송
+                const context = {
+                    title : '글 조회',
+                    post : result,
+                };
+
+                req.app.render('showpost', context, function(err, html) {
+                    if (err) {
+                        console.error('뷰 렌더링 중 에러 발생 : ' + err.stack);
+
+                        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                        res.write('<h2>뷰 렌더링 중 에러 발생</h2>');
+                        res.write('<p>' + err.stack + '</p>');
+                        res.end();
+
+                        return;
+                    }
+                    console.log('adduser 렌더링 완료');
+                    res.end(html);
+                });
+
+            } else {
+                res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>글 조회  실패</h2>');
+                res.end();
+            }
+        });
+    } else {
+        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+        res.write('<h2>데이터베이스 연결 실패</h2>');
+        res.end();
+    }
+}
+
 module.exports.addpost = addpost;
+module.exports.showpost = showpost;
