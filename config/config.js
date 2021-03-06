@@ -12,5 +12,7 @@ module.exports = {
     route_info: [
         {file:'./post_method', path:'/addpost', method:'addpost', type:'post'},
         {file:'./post_method', path:'/showpost/:id', method:'showpost', type:'get'},
+        {file:'./post_method', path:'/listpost', method:'listpost', type:'post'},
+        {file:'./post_method', path:'/listpost', method:'listpost', type:'get'}
     ]
 }

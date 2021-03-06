@@ -23,6 +23,15 @@ Schema.createSchema = function(mongoose){
             this.findOne({_id: id})
                 .populate('writer', 'name provider email')
                 .exec(callback);
+        },
+
+        list: function(options, callback) {
+            var criteria = options.criteria || {};
+
+            this.find(criteria)
+                .populate('writer', 'name provider email')
+                .sort({'created_at': -1})
+                .exec(callback);
         }
     }
 
