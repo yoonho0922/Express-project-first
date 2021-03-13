@@ -18,10 +18,19 @@ Schema.createSchema = function(mongoose){
 
 
     PostSchema.statics = {
+
+        removePost: function(id, callback){
+            this.remove({ _id: id }, (err) => {
+                if (err) throw err;
+
+                console.log('remove posts _id : ' + id);
+            });
+        },
+
         // ID로 글 찾기
         load: function(id, callback){
             this.findOne({_id: id})
-                .populate('writer', 'name provider email')
+                .populate('writer')
                 .exec(callback);
         },
 

@@ -187,6 +187,27 @@ const listpost = function(req, res) {
     }
 }
 
+const removepost = function(req, res){
+    console.log('post_method 모듈 안에 있는 removepost 호출됨');
+
+    const param_id = req.body._id || req.query._id || req.params._id;
+    console.log('요청 파라미터 : ' + param_id);
+
+    const database = req.app.get('database');
+
+    if (database.db){
+
+        database.PostModel.removePost(param_id);
+
+        res.redirect('/listpost');
+    } else{
+        res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+        res.write('<h2>데이터베이스 연결 실패</h2>');
+        res.end();
+    }
+}
+
 module.exports.addpost = addpost;
 module.exports.showpost = showpost;
 module.exports.listpost = listpost;
+module.exports.removepost = removepost;

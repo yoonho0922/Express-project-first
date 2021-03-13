@@ -84,25 +84,22 @@
 							
 							    for (let i = 0; i < posts.length; i++) {
 								   const curTitle = posts[i].title;
-								   const curContents = posts[i].contents;
-								   const curWriter = posts[i].writer;
+								   const curWriter = '작성자';
 								   const curNo = noStart - i;
 								   %>
 								    <div class="item">
 										<div class="ui grid">
 						    				<div class="two wide column"><%=curNo %></div>
-						    				<div class="fourteen wide column" onclick="javascript:window.location='/showpost/<%=posts[i]._id %>'">
-						    					<div class="ui header">
-										    		<h4 class="ui left aligned header">
-										    			<%=curTitle %>
-										    		</h4>
-											      	<h5 class="ui right aligned orange header">
-											      			<%=curWriter %>&nbsp;&nbsp;&nbsp;&nbsp;
-											        		2015-06-01
-											        		12
-											      	</h5>
-												</div>
-						    				</div>
+											<div class="seven wide column" onclick="javascript:window.location='/showpost/<%=posts[i]._id %>'">
+												<h4 class="ui left aligned header">
+													<%=curTitle %>
+												</h4>
+											</div>
+											<div class="one wide column" onclick="javascript:window.location='/removepost/<%=posts[i]._id %>'">X</div>
+											<div class="two wide column"><%=curWriter %></div>
+											<div class="two wide column">2021-03-01</div>
+											<div class="two wide column">1</div>
+
 						    			</div>
 						    		</div>
 							<% } %>	
